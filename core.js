@@ -12,8 +12,9 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem('bvht_' + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem('bvht_' + k, JSON.stringify(v)); } catch (e) {} }
 };
-const settings = Object.assign({ max: 10, rate: 0.9, voice: true, sfx: true, autoListen: false, childName: '', theme: 'princess', mascot: 'tien' }, store.get('settings', {}));
+const settings = Object.assign({ max: 100, rate: 0.9, voice: true, sfx: true, autoListen: false, childName: '', theme: 'princess', mascot: 'tien' }, store.get('settings', {}));
 const progress = Object.assign({ stars: 0, stickers: [], stats: {}, videos: [] }, store.get('progress', {}));
+if (!settings.range100) { settings.max = 100; settings.range100 = true; }
 function save() { store.set('settings', settings); store.set('progress', progress); }
 function addStar(n = 1) {
   progress.stars += n; save();
@@ -32,6 +33,7 @@ function numWord(n) {
   if (n < 10) return UNITS[n];
   if (n === 10) return 'mười';
   if (n < 20) { const u = n % 10; return 'mười ' + (u === 5 ? 'lăm' : UNITS[u]); }
+  if (n === 100) return 'một trăm';
   const t = Math.floor(n / 10), u = n % 10;
   return UNITS[t] + ' mươi' + (u ? ' ' + (u === 5 ? 'lăm' : u === 1 ? 'mốt' : UNITS[u]) : '');
 }
@@ -44,10 +46,13 @@ function parseNumber(text) {
   const tk = text.split(/[\s,.!?]+/).filter(Boolean);
   for (let i = 0; i < tk.length; i++) {
     const w = tk[i];
+    if (w === 'trăm' && i > 0 && WORDNUM[tk[i - 1]] === 1) return 100;
+    if (w === 'một' && tk[i + 1] === 'trăm') return 100;
     if (w === 'mười') { const nx = WORDNUM[tk[i + 1]]; return 10 + (nx > 0 ? nx : 0); }
     if (!(w in WORDNUM)) continue;
     const v = WORDNUM[w];
     if (tk[i + 1] === 'mươi') { const nx = WORDNUM[tk[i + 2]]; return v * 10 + (nx > 0 ? nx : 0); }
+    if (v >= 2 && ['mốt', 'tư', 'lăm', 'nhăm'].includes(tk[i + 1])) return v * 10 + WORDNUM[tk[i + 1]]; // nói tắt: "ba mốt" = 31
     return v;
   }
   return null;
@@ -268,3 +273,17 @@ function parseShape(t) {
   if (/tam giác|giác/.test(t)) return 'tamgiac';
   return null;
 }
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+/* ---- Biểu diễn chục – đơn vị (que tính / thanh chục) ----
+   goneT, goneU: số thanh chục / khối đơn vị bị gạch đi (dùng cho phép trừ) */
+function placeValue(n, goneT = 0, goneU = 0, cls = '') {
+  const t = Math.floor(n / 10), u = n % 10;
+  const tens = Array.from({ length: t }, (_, k) => `<span class="ten ${k >= t - goneT ? 'gone' : ''}" style="animation-delay:${k * 70}ms"></span>`).join('');
+  const units = Array.from({ length: u }, (_, k) => `<span class="unit ${k >= u - goneU ? 'gone' : ''}" style="animation-delay:${(t + k) * 70}ms"></span>`).join('');
+  return `<div class="pv ${cls}"><div class="pv-t">${tens}</div><div class="pv-u">${units}</div></div>`;
+}
+/* Hiện đồ vật nếu số nhỏ, hiện thanh chục nếu số lớn */
+function showQty(n, emoji, cls = '') { return n <= 20 ? objs(n, emoji, cls) : placeValue(n); }
+function pvWords(n) { const t = Math.floor(n / 10), u = n % 10; return n === 100 ? 'mười chục' : `${numWord(t)} chục${u ? ' và ' + numWord(u) + ' đơn vị' : ''}`; }

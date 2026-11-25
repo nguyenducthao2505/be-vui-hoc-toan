@@ -3,7 +3,7 @@
 const app = document.getElementById('app');
 
 const GAMES = [
-  { h: 'phim', ic: '🎬', name: 'Xem hoạt hình', sub: '12 phim học toán', color: '#ff006e' },
+  { h: 'bang100', ic: '💯', name: 'Bảng số 100', sub: 'Tìm số, liền trước, liền sau', color: '#ff006e' },
   { h: 'ngoc', ic: '🧜‍♀️', name: 'Tiên cá bắt ngọc', sub: 'Bơi theo đáp án', color: '#0096c7' },
   { h: 'tomau', ic: '🎨', name: 'Tô màu theo số', sub: 'Lâu đài, hoa, kỳ lân', color: '#e056fd' },
   { h: 'tiec', ic: '🫖', name: 'Tiệc trà công chúa', sub: 'Đếm đủ món', color: '#ff8fab' },
@@ -24,7 +24,7 @@ function home() {
   if (!TTS.ok) warn.push('Trình duyệt không hỗ trợ giọng đọc. Hãy mở bằng Google Chrome.');
   app.innerHTML = `<div class="hero">${Owl.html()}<div class="bubble">Chào ${settings.theme === 'princess' ? 'công chúa nhỏ' : 'bé'}${name}! Hôm nay mình học gì nào? ${settings.theme === 'princess' ? '👑' : '🌈'}</div></div>
     ${warn.map(w => `<div class="warn">⚠️ ${w}</div>`).join('')}
-    <h2 class="section-title">🎬 Xem & chơi</h2>
+    <h2 class="section-title">🎮 Trò chơi</h2>
     <div class="home-grid">${GAMES.map(g => tile(g.h, g.ic, g.name, g.sub, g.color)).join('')}</div>
     <h2 class="section-title">📚 Học toán</h2>
     <div class="home-grid">${tile('hoc', '🔟', 'Học số', `Từ 0 đến ${settings.max}`, '#ffb703')}
@@ -58,7 +58,7 @@ function parentScreen() {
     <label>Tên của bé <input type="text" id="sName" value="${escapeHtml(settings.childName)}" placeholder="VD: Bống"></label>
     <label>Chủ đề <select id="sTheme"><option value="princess">👑 Công chúa – Nàng tiên – Tiên cá</option><option value="animal">🐶 Thú cưng – Hoa quả</option></select></label>
     <label>Nhân vật dẫn dắt <select id="sMascot"><option value="tien">🧚 Tiên Nhỏ</option><option value="cu">🦉 Cú Tí Hon</option></select></label>
-    <label>Phạm vi số <select id="sMax"><option value="10">0 – 10 (mẫu giáo)</option><option value="20">0 – 20 (chuẩn bị lớp 1)</option></select></label>
+    <label>Phạm vi số <select id="sMax"><option value="10">0 – 10</option><option value="20">0 – 20</option><option value="100">0 – 100 (chương trình lớp 1)</option></select></label>
     <label>Tốc độ đọc <input type="range" id="sRate" min="0.6" max="1.3" step="0.05" value="${settings.rate}"></label>
     <label>Giọng đọc <input type="checkbox" id="sVoice" ${settings.voice ? 'checked' : ''}></label>
     <label>Âm thanh hiệu ứng <input type="checkbox" id="sSfx" ${settings.sfx ? 'checked' : ''}></label>
@@ -70,10 +70,6 @@ function parentScreen() {
       <li>Chọn công cụ ưu tiên: <b>Dịch vụ lời nói của Google</b>.</li><li>Bấm ⚙️ → Cài đặt dữ liệu giọng nói → <b>Tiếng Việt</b> → tải về.</li>
       <li>Micro: khi được hỏi quyền dùng micro, chọn <b>Cho phép</b>.</li>
       <li>Muốn bé nói đáp án khi <b>không có mạng</b> (bản APK): mở ứng dụng Google → ảnh đại diện → Cài đặt → Giọng nói → Nhận dạng lời nói ngoại tuyến → tải <b>Tiếng Việt</b> (nếu máy hỗ trợ).</li></ol></details>
-    <h2>📺 Video YouTube của bố mẹ</h2>
-    <p class="muted">Dán link video hoạt hình toán học bố mẹ đã xem và chọn. Video sẽ hiện trong mục “Xem hoạt hình” (cần Internet).</p>
-    <div class="row"><input type="text" id="ytUrl" placeholder="https://youtu.be/..." style="flex:1;min-width:220px"><input type="text" id="ytTitle" placeholder="Tên video" style="flex:1;min-width:160px"><button class="btn primary" id="ytAdd">➕ Thêm</button></div>
-    <table style="margin-top:10px">${(progress.videos || []).map((v, k) => `<tr><td>${escapeHtml(v.title || v.id)}</td><td><button class="btn" data-del="${k}" style="font-size:16px;padding:6px 12px">🗑️</button></td></tr>`).join('')}</table>
     <h2>📊 Tiến độ</h2>
     <p style="font-size:18px">⭐ Tổng sao: <b>${progress.stars}</b> · 🎁 Hình dán: <b>${progress.stickers.length}</b></p>
     <table><tr><th>Bài</th><th>Đúng ngay lần đầu</th><th>Tỉ lệ</th></tr>${rows}</table>
@@ -81,11 +77,9 @@ function parentScreen() {
   </div>`;
   $('#sMax').value = String(settings.max); $('#sTheme').value = settings.theme; $('#sMascot').value = settings.mascot;
   const upd = () => { settings.childName = $('#sName').value.trim().slice(0, 20); settings.max = +$('#sMax').value; settings.rate = +$('#sRate').value; settings.voice = $('#sVoice').checked; settings.sfx = $('#sSfx').checked; settings.autoListen = $('#sAuto').checked; settings.theme = $('#sTheme').value; settings.mascot = $('#sMascot').value; save(); applyTheme(); };
-  $$('input,select', app).forEach(el => { if (!['ytUrl', 'ytTitle'].includes(el.id)) el.onchange = upd; });
+  $$('input,select', app).forEach(el => { el.onchange = upd; });
   $('#testV').onclick = () => { upd(); TTS.say('Xin chào! Mình là Cú Tí Hon. Ba cộng hai bằng năm.'); };
   const tm = $('#testM'); if (tm) tm.onclick = async () => { try { const a = await listen(); toast(a.length ? 'Nghe được: ' + a[0] : 'Không nghe thấy gì'); } catch (e) { toast('Lỗi micro: ' + e); } };
-  $('#ytAdd').onclick = () => { const id = ytId($('#ytUrl').value.trim()); if (!id) return toast('Link YouTube không hợp lệ'); progress.videos = progress.videos || []; progress.videos.push({ id, title: $('#ytTitle').value.trim() || 'Video ' + (progress.videos.length + 1) }); save(); toast('Đã thêm video'); parentScreen(); };
-  $$('[data-del]', app).forEach(b => b.onclick = () => { progress.videos.splice(+b.dataset.del, 1); save(); parentScreen(); });
   let armed = false;
   $('#reset').onclick = e => { if (!armed) { armed = true; e.target.textContent = 'Bấm lần nữa để xác nhận'; return; } progress.stars = 0; progress.stickers = []; progress.stats = {}; save(); $('#starCount').textContent = 0; toast('Đã xoá tiến độ'); parentScreen(); };
   $('#done').onclick = () => { upd(); go(''); };
@@ -107,8 +101,7 @@ function route() {
     case 'kylan': return gameNumberLine();
     case 'the': return gameMemory();
     case 'xep': return gameShapes();
-    case 'phim': return b ? playCartoon(b) : cartoonsHome();
-    case 'yt': return playYoutube(b);
+    case 'bang100': return gameHundred();
     case 'suutap': return stickerBook();
     case 'bome': return parentGate();
     default: return home();

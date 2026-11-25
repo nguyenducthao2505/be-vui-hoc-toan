@@ -6,12 +6,11 @@
 
 | Nhóm | Nội dung |
 |---|---|
-| 🎬 Phim hoạt hình (12 phim) | Công chúa và kim cương · Tiên cá nhặt vỏ sò · Nàng tiên rắc sao ước · Xây lâu đài hình học · Kỳ lân và cầu vồng · Các bạn thú đến chơi · Chim non về tổ · Bóng bay bay mất · Ngôi nhà hình học · Cá sấu tham ăn · Mèo con trốn tìm · Tên lửa đếm ngược |
-| 🎮 Trò chơi (9) | Tiên cá bắt ngọc · Tô màu theo số · Tiệc trà công chúa · Nối sao thần kỳ · Kỳ lân nhảy số · Bắt bóng bay · Lật thẻ · Xếp hình · Thử thách giọng nói |
-| 📚 Bài học | Học số · Đếm · So sánh · Cộng · Trừ · Hình học · Quy luật · Vị trí |
+| 🎮 Trò chơi (9) | Bảng số 100 · Tiên cá bắt ngọc · Tô màu theo số · Tiệc trà công chúa · Nối sao thần kỳ · Kỳ lân nhảy số · Bắt bóng bay · Lật thẻ · Xếp hình · Thử thách giọng nói (phạm vi 100) |
+| 📚 Bài học (phạm vi 100) | Học số 0–100 (bảng 100 ô) · Chục & đơn vị · Đếm · So sánh · Cộng, trừ không nhớ trong phạm vi 100 · Hình học · Quy luật (đếm thêm 2, 5, 10) · Vị trí |
 | 👑 Chủ đề | Công chúa – Nàng tiên – Tiên cá (mặc định) hoặc Thú cưng – Hoa quả; nhân vật dẫn dắt Tiên Nhỏ hoặc Cú Tí Hon |
 | 🎤 Giọng nói | Đọc câu hỏi, khen bé; bé bấm micro và nói đáp án |
-| 👨‍👩‍👧 Góc bố mẹ | Chủ đề, phạm vi số 10/20, tốc độ đọc, tiến độ, thêm video YouTube |
+| 👨‍👩‍👧 Góc bố mẹ | Chủ đề, phạm vi số 10 / 20 / 100 (mặc định 100), tốc độ đọc, tiến độ |
 
 ## Bản APK (cài thẳng lên Android, chạy offline)
 
@@ -40,7 +39,7 @@ Ghi chú: APK được ký bằng khoá gỡ lỗi `debug.keystore` để mỗi 
 
 ## Lưu ý
 
-- Bài học, trò chơi và phim hoạt hình **vẫn chạy khi không có mạng**, sau lần mở đầu tiên. Riêng tính năng **nhận giọng nói** và video YouTube thì cần Internet.
+- Bản web: bài học và trò chơi **vẫn chạy khi không có mạng** sau lần mở đầu tiên; riêng **nhận giọng nói** cần Internet. Bản APK chạy offline ngay từ đầu.
 - Tiến độ của bé được lưu ngay trên máy (trong trình duyệt).
 - Khi sửa mã nguồn, hãy tăng số phiên bản `CACHE` trong `sw.js` (ví dụ `bvht-v2`) để máy tính bảng tải bản mới.
 
@@ -52,10 +51,10 @@ style.css             giao diện, hoạt ảnh
 core.js               giọng đọc, micro, âm thanh, linh vật, tiện ích
 lessons.js            7 dạng bài + học số + màn hoàn thành
 games.js              bóng bay, lật thẻ, xếp hình
-cartoons.js           7 phim hoạt hình + video YouTube
+cartoons.js           (để trống – phần hoạt hình đã gỡ)
 app.js                trang chủ, góc bố mẹ, điều hướng
 sw.js                 chạy offline (bản web)
-games2.js             5 trò chơi chủ đề công chúa
+games2.js             5 trò chơi chủ đề công chúa + Bảng số 100
 package.json, capacitor.config.json, android-setup.sh, android-icon-*.png, debug.keystore   dựng APK
 manifest.webmanifest  thông tin cài đặt ứng dụng
 icon-*.png            biểu tượng

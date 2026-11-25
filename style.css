@@ -245,3 +245,26 @@ body.princess .cloud{opacity:.55}
 .nline .uni.jumping{animation:hop .45s ease-in-out}
 @media (max-width:600px){.nline .tiles button{height:54px;font-size:20px}.palette{flex-direction:row;flex-wrap:wrap;justify-content:center}.palette button{width:70px;height:60px;font-size:24px}}
 .nline .tiles button.hint{outline:6px dashed #2a9d8f;outline-offset:2px;animation:pulse 1s infinite}
+
+/* ===== Chục – đơn vị ===== */
+.pv{display:flex;align-items:flex-end;gap:14px;justify-content:center;flex-wrap:wrap}
+.pv-t{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap;justify-content:center}
+.pv-u{display:grid;grid-template-columns:repeat(5,22px);gap:4px;align-content:end}
+.ten{width:22px;height:150px;border-radius:5px;background:repeating-linear-gradient(#c77dff 0 13px,#fff 13px 15px);box-shadow:0 0 0 2px #7b2cbf inset;animation:popin .35s backwards}
+.unit{width:22px;height:13px;border-radius:4px;background:#ff8fab;box-shadow:0 0 0 2px #c9184a inset;animation:popin .35s backwards}
+.ten.gone,.unit.gone{opacity:.25;position:relative}
+.ten.gone:after,.unit.gone:after{content:"";position:absolute;left:-4px;right:-4px;top:50%;border-top:3px solid #e63946;transform:rotate(-35deg)}
+.pv.sm .ten{width:12px;height:80px;background:repeating-linear-gradient(#c77dff 0 6.5px,#fff 6.5px 8px)}
+.pv.sm .pv-u{grid-template-columns:repeat(5,12px);gap:2px}.pv.sm .unit{width:12px;height:7px}
+.pv-cap{font-size:20px;font-weight:800;color:#7b2cbf;text-align:center;width:100%}
+.h100{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;max-width:760px;margin:0 auto;width:100%}
+.h100 button{aspect-ratio:1.25/1;border:none;border-radius:10px;font-size:clamp(14px,2.4vw,24px);font-weight:900;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.12)}
+.h100 button:nth-child(20n+1),.h100 button:nth-child(20n+2),.h100 button:nth-child(20n+3),.h100 button:nth-child(20n+4),.h100 button:nth-child(20n+5),.h100 button:nth-child(20n+6),.h100 button:nth-child(20n+7),.h100 button:nth-child(20n+8),.h100 button:nth-child(20n+9),.h100 button:nth-child(20n+10){background:#fff0f6}
+.h100 button.on{background:#c77dff!important;color:#fff}
+.h100 button.ok{background:#b7efc5!important;animation:jump .5s}
+.h100 button.no{background:#ffccd5!important;animation:shake .4s}
+.h100 button.hint{outline:4px dashed #2a9d8f;outline-offset:1px}
+.card .front .pv .ten{width:9px;height:60px;background:repeating-linear-gradient(#c77dff 0 4.8px,#fff 4.8px 6px)}
+.card .front .pv .pv-u{grid-template-columns:repeat(5,9px);gap:2px}.card .front .pv .unit{width:9px;height:6px}
+.card .front .pv{gap:6px}.card .front .pv-t{gap:3px}
+.h100 .chip{width:auto;height:auto;border-radius:10px;font-size:clamp(13px,2.2vw,22px)}

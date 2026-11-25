@@ -3,7 +3,7 @@
 
 /* ---- 1. Tiên cá bắt ngọc trai ---- */
 function gamePearls() {
-  setTitle('Tiên cá bắt ngọc trai'); const tok = screenTok; const M = Math.min(settings.max, 10);
+  setTitle('Tiên cá bắt ngọc trai'); const tok = screenTok; const M = settings.max;
   let score = 0, time = 60, target, pearls = [], last = performance.now(), spawnT = 0, mx = 50;
   app.innerHTML = `<div class="bgame"><div class="bhud"><div class="btarget">Bắt ngọc: <b id="tg"></b> <button class="icon-btn" id="rep" style="width:46px;height:46px;font-size:22px">🔊</button></div><div>⏱ <b id="tm">60</b></div><div>🦪 <b id="sc">0</b></div></div>
     <div class="arena sea" id="ar"><div class="mermaid" id="mm" style="left:50%">🧜‍♀️</div></div>
@@ -14,13 +14,14 @@ function gamePearls() {
   ar.onpointerdown = e => { ar.setPointerCapture(e.pointerId); move(e); }; ar.onpointermove = e => { if (e.buttons || e.pointerType === 'touch') move(e); };
   const newTarget = () => {
     if (Math.random() < .5) { const v = rnd(0, M); target = { v, label: v, say: `Bắt viên ngọc số ${numWord(v)}` }; }
-    else { const s = rnd(1, M), a = rnd(0, s); target = { v: s, label: `${a}+${s - a}`, say: `Bắt viên ngọc bằng ${numWord(a)} cộng ${numWord(s - a)}` }; }
+    else if (Math.random() < .5) { const [a, b] = noCarryAdd(M); target = { v: a + b, label: `${a}+${b}`, say: `Bắt viên ngọc bằng ${numWord(a)} cộng ${numWord(b)}` }; }
+    else { const [a, b] = noBorrowSub(M); target = { v: a - b, label: `${a}−${b}`, say: `Bắt viên ngọc bằng ${numWord(a)} trừ ${numWord(b)}` }; }
     $('#tg').textContent = target.label; TTS.say(target.say);
   };
   $('#rep').onclick = () => TTS.say(target.say);
   const spawn = () => {
     const has = pearls.some(p => p.v === target.v && p.y < 50);
-    const v = (!has || Math.random() < .35) ? target.v : rnd(0, M);
+    const v = (!has || Math.random() < .35) ? target.v : nearNum(target.v, M);
     const el = document.createElement('div'); el.className = 'pearl'; el.textContent = v;
     const p = { el, v, x: rnd(8, 92), y: -12, sp: rnd(9, 15) }; el.style.left = p.x + '%'; ar.appendChild(el); pearls.push(p);
   };
@@ -161,23 +162,52 @@ function gameNumberLine() {
   const play = () => {
     if (!alive(tok)) return;
     if (round >= ROUNDS) { addStar(score); return finishScreen({ score, count: ROUNDS, title: 'Kỳ lân về đích rồi!', again: gameNumberLine }); }
-    const add = round < 4 || Math.random() < .5; const start = add ? rnd(0, 7) : rnd(3, 10); const step = add ? rnd(1, Math.min(3, 10 - start)) : rnd(1, Math.min(3, start));
-    const ans = add ? start + step : start - step; let tries = 0, done = false;
-    const q = add ? `Kỳ lân đang ở số ${numWord(start)}. Kỳ lân nhảy thêm ${numWord(step)} bước về phía trước. Kỳ lân đến số mấy?` : `Kỳ lân đang ở số ${numWord(start)}. Kỳ lân lùi lại ${numWord(step)} bước. Kỳ lân đến số mấy?`;
+    const U = settings.max > 20 && round % 2 === 1 ? 10 : settings.max > 20 && round >= 4 && Math.random() < .5 ? 10 : 1; // U = 10: tia số theo chục
+    const add = round < 4 || Math.random() < .5; const si = add ? rnd(0, 7) : rnd(3, 10); const sk = add ? rnd(1, Math.min(3, 10 - si)) : rnd(1, Math.min(3, si));
+    const start = si * U, step = sk * U, ans = add ? start + step : start - step, ai = add ? si + sk : si - sk; let tries = 0, done = false;
+    const stepWord = U === 10 ? `${numWord(sk)} chục` : `${numWord(sk)} bước`;
+    const q = add ? `Kỳ lân đang ở số ${numWord(start)}. Kỳ lân nhảy thêm ${stepWord}${U === 10 ? ', mỗi bước là mười' : ''}. Kỳ lân đến số mấy?` : `Kỳ lân đang ở số ${numWord(start)}. Kỳ lân lùi lại ${stepWord}${U === 10 ? ', mỗi bước là mười' : ''}. Kỳ lân đến số mấy?`;
     app.innerHTML = `<div class="quiz"><div class="prompt"><button class="icon-btn" id="rep">🔊</button> ${start} ${add ? '+' : '−'} ${step} = <span class="ans">?</span></div>
-      <div class="nline" id="nl"><div class="uni" id="uni">🦄</div><div class="tiles">${Array.from({ length: 11 }, (_, k) => `<button data-n="${k}">${k}</button>`).join('')}</div></div>
-      <div class="muted">${add ? '➡️ Nhảy về phía trước là cộng thêm' : '⬅️ Lùi lại là trừ đi'}</div></div>`;
+      <div class="nline" id="nl"><div class="uni" id="uni">🦄</div><div class="tiles">${Array.from({ length: 11 }, (_, k) => `<button data-n="${k}">${k * U}</button>`).join('')}</div></div>
+      <div class="muted">${U === 10 ? 'Mỗi ô cách nhau 10 (một chục). ' : ''}${add ? '➡️ Nhảy về phía trước là cộng thêm' : '⬅️ Lùi lại là trừ đi'}</div></div>`;
     const tiles = $$('.tiles button', app), uni = $('#uni');
     const place = n => { const t = tiles[n], nl = $('#nl'); uni.style.left = (t.offsetLeft + t.offsetWidth / 2) + 'px'; };
-    requestAnimationFrame(() => place(start));
+    requestAnimationFrame(() => place(si));
     $('#rep').onclick = () => TTS.say(q);
     tiles.forEach(t => t.onclick = async () => {
       if (done) return; const n = +t.dataset.n;
-      if (n !== ans) { tries++; sfx.bad(); Owl.mood('sad'); TTS.say(pick(RETRY)); if (tries >= 2) tiles[ans].classList.add('hint'); return; }
+      if (n !== ai) { tries++; sfx.bad(); Owl.mood('sad'); TTS.say(pick(RETRY)); if (tries >= 2) tiles[ai].classList.add('hint'); return; }
       done = true; if (tries === 0) score++; stat(add ? 'cong' : 'tru', tries === 0);
-      for (let k = 1; k <= step; k++) { if (!alive(tok)) return; const p = add ? start + k : start - k; uni.classList.remove('jumping'); void uni.offsetWidth; uni.classList.add('jumping'); place(p); sfx.boing(); await TTS.say(numWord(k)); }
+      for (let k = 1; k <= sk; k++) { if (!alive(tok)) return; const p = add ? si + k : si - k; uni.classList.remove('jumping'); void uni.offsetWidth; uni.classList.add('jumping'); place(p); sfx.boing(); await TTS.say(U === 10 ? numWord(p * 10) : numWord(k)); }
       t.classList.add('ok'); $('.ans', app).textContent = ans; sfx.ok(); Confetti.at(t, 40);
       TTS.say(`${pick(PRAISE)} ${numWord(start)} ${add ? 'cộng' : 'trừ'} ${numWord(step)} bằng ${numWord(ans)}.`).then(() => setTimeout(() => { if (alive(tok)) { round++; play(); } }, 400));
+    });
+    TTS.say(q);
+  };
+  play();
+}
+
+/* ---- 6. Bảng số 100 ---- */
+function gameHundred() {
+  setTitle('Bảng số 100'); const tok = screenTok; let round = 0, score = 0; const ROUNDS = 10;
+  const play = () => {
+    if (!alive(tok)) return;
+    if (round >= ROUNDS) { addStar(score); return finishScreen({ score, count: ROUNDS, title: 'Con thuộc bảng số 100 rồi!', again: gameHundred }); }
+    const v = rnd(0, 4); let n, ans, q, show;
+    if (v <= 1) { ans = rnd(1, 100); q = `Chạm vào số ${numWord(ans)}`; show = `Tìm số <b style="color:#c77dff;font-size:1.3em">${ans}</b>`; }
+    else if (v === 2) { n = rnd(1, 99); ans = n + 1; q = `Số liền sau của ${numWord(n)} là số nào?`; show = `Số liền sau của <b>${n}</b> là?`; }
+    else if (v === 3) { n = rnd(2, 100); ans = n - 1; q = `Số liền trước của ${numWord(n)} là số nào?`; show = `Số liền trước của <b>${n}</b> là?`; }
+    else { n = rnd(1, 89); ans = n + 10; q = `Số ${numWord(n)} thêm một chục là số nào? Gợi ý: ở ngay ô bên dưới.`; show = `<b>${n}</b> + 10 = ?`; }
+    let tries = 0, done = false;
+    app.innerHTML = `<div class="quiz"><div class="prompt">${Owl.html('small')}<button class="icon-btn" id="rep">🔊</button> ${show} <span class="muted">(${round + 1}/${ROUNDS})</span></div>
+      <div class="h100">${Array.from({ length: 100 }, (_, k) => `<button data-n="${k + 1}" class="${n === k + 1 && v >= 2 ? 'on' : ''}">${k + 1}</button>`).join('')}</div></div>`;
+    const bs = $$('.h100 button', app);
+    $('#rep').onclick = () => TTS.say(q);
+    bs.forEach(b => b.onclick = () => {
+      if (done) return; const k = +b.dataset.n;
+      if (k === ans) { done = true; b.classList.add('ok'); if (!tries) score++; stat('chuc', !tries); sfx.ok(); Confetti.at(b, 40); Owl.mood('happy');
+        TTS.say(`${pick(PRAISE)} Đó là số ${numWord(ans)}.`).then(() => setTimeout(() => { if (alive(tok)) { round++; play(); } }, 400)); }
+      else { tries++; b.classList.remove('no'); void b.offsetWidth; b.classList.add('no'); sfx.bad(); TTS.say(`Đây là số ${numWord(k)}. ${pick(RETRY)}`); if (tries >= 2) bs[ans - 1].classList.add('hint'); }
     });
     TTS.say(q);
   };

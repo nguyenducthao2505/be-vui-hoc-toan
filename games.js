@@ -2,6 +2,12 @@
 'use strict';
 
 /* ---- 1. Bắt bóng bay ---- */
+/* Số gây nhiễu gần đáp án (dễ nhầm hàng chục / đơn vị) */
+function nearNum(v, M) {
+  if (M <= 20) return rnd(0, M);
+  const c = [v + 1, v - 1, v + 10, v - 10, (v % 10) * 10 + Math.floor(v / 10), v + 2, v - 2, rnd(0, M)].filter(x => x >= 0 && x <= M && x !== v);
+  return c.length ? pick(c) : rnd(0, M);
+}
 function gameBalloons() {
   setTitle('Bắt bóng bay'); const tok = screenTok; const M = settings.max;
   let score = 0, time = 60, target, balloons = [], last = performance.now(), spawnT = 0;
@@ -9,14 +15,14 @@ function gameBalloons() {
   const sky = $('#sky');
   const newTarget = () => {
     if (Math.random() < .5 || M < 2) { const v = rnd(0, M); target = { v, label: v, say: `Chạm vào bóng số ${numWord(v)}` }; }
-    else { const s = rnd(1, Math.min(M, 10)), a = rnd(0, s); target = { v: s, label: `${a}+${s - a}`, say: `${numWord(a)} cộng ${numWord(s - a)} bằng mấy? Chạm vào quả bóng đúng nhé` }; }
+    else { const [a, b] = noCarryAdd(M); target = { v: a + b, label: `${a}+${b}`, say: `${numWord(a)} cộng ${numWord(b)} bằng mấy? Chạm vào quả bóng đúng nhé` }; }
     $('#tg').textContent = target.label; TTS.say(target.say);
   };
   $('#rep').onclick = () => TTS.say(target.say);
   const spawn = () => {
     const hasT = balloons.some(b => b.v === target.v && b.y < sky.clientHeight * .7);
-    const v = (!hasT || Math.random() < .3) ? target.v : rnd(0, M);
-    const el = document.createElement('button'); el.className = 'balloon'; el.textContent = v;
+    const v = (!hasT || Math.random() < .3) ? target.v : nearNum(target.v, M);
+    const el = document.createElement('button'); el.className = 'balloon'; el.textContent = v; if (v > 9) el.style.fontSize = '34px';
     el.style.left = rnd(2, 88) + '%'; el.style.background = pick(COLORS);
     const b = { el, v, y: 0, speed: rnd(55, 95), sway: Math.random() * 6 };
     el.onpointerdown = ev => {
@@ -41,15 +47,17 @@ function gameBalloons() {
 /* ---- 2. Lật thẻ ghép đôi ---- */
 function gameMemory() {
   setTitle('Lật thẻ ghép đôi'); const tok = screenTok;
-  const nums = shuffle(Array.from({ length: Math.min(settings.max, 10) }, (_, k) => k + 1)).slice(0, 6); const [e, name] = pick(THINGS);
+  const big = settings.max > 20 && Math.random() < .6;
+  const nums = big ? shuffle(Array.from({ length: 89 }, (_, k) => k + 11)).slice(0, 6) : shuffle(Array.from({ length: Math.min(settings.max, 10) }, (_, k) => k + 1)).slice(0, 6);
+  let [e, name] = pick(THINGS); if (big) name = 'khối chục';
   const cards = shuffle(nums.flatMap(n => [{ n, t: 'num' }, { n, t: 'obj' }]));
-  app.innerHTML = `<div class="row" style="margin-bottom:12px;font-size:22px;font-weight:800">${Owl.html('small')} Tìm cặp: số và nhóm ${name} giống nhau · Lượt: <b id="mv">0</b></div>
-    <div class="mgrid">${cards.map((c, k) => `<button class="card" data-k="${k}"><div class="inner"><div class="face back">❓</div><div class="face front">${c.t === 'num' ? c.n : objs(c.n, e)}</div></div></button>`).join('')}</div>`;
+  app.innerHTML = `<div class="row" style="margin-bottom:12px;font-size:22px;font-weight:800">${Owl.html('small')} Tìm cặp: số và ${big ? 'thanh chục' : 'nhóm ' + name} giống nhau · Lượt: <b id="mv">0</b></div>
+    <div class="mgrid">${cards.map((c, k) => `<button class="card" data-k="${k}"><div class="inner"><div class="face back">❓</div><div class="face front">${c.t === 'num' ? c.n : big ? placeValue(c.n) : objs(c.n, e)}</div></div></button>`).join('')}</div>`;
   let open = [], moves = 0, matched = 0, lock = false;
   $$('.card', app).forEach(el => el.onclick = () => {
     if (lock || el.classList.contains('open') || el.classList.contains('done')) return;
     const c = cards[+el.dataset.k]; el.classList.add('open'); sfx.flip(); open.push({ el, c });
-    TTS.say(c.t === 'num' ? `Số ${numWord(c.n)}` : `${numWord(c.n)} ${name}`);
+    TTS.say(c.t === 'num' ? `Số ${numWord(c.n)}` : big ? pvWords(c.n) : `${numWord(c.n)} ${name}`);
     if (open.length === 2) {
       moves++; $('#mv').textContent = moves; const [a, b] = open; open = [];
       if (a.c.n === b.c.n && a.c.t !== b.c.t) {
@@ -59,7 +67,7 @@ function gameMemory() {
       } else { lock = true; setTimeout(() => { a.el.classList.remove('open'); b.el.classList.remove('open'); lock = false; }, 1100); }
     }
   });
-  TTS.say(`Lật hai thẻ để tìm số và nhóm ${name} giống nhau nhé.`);
+  TTS.say(big ? 'Lật hai thẻ để tìm số và các thanh chục giống nhau nhé.' : `Lật hai thẻ để tìm số và nhóm ${name} giống nhau nhé.`);
 }
 
 /* ---- 3. Xếp hình vào ô ---- */
