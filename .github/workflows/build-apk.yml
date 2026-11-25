@@ -1,0 +1,71 @@
+name: Dựng APK Android
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Khoá ký cố định (tự tạo ở lần đầu, các lần sau dùng lại)
+        run: |
+          if [ ! -f debug.keystore ]; then
+            keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add debug.keystore
+            git commit -m "Tạo khoá ký APK (dùng lại cho các bản sau)"
+            git push
+          fi
+
+      - name: Chuẩn bị thư mục web
+        run: |
+          mkdir -p www
+          cp index.html style.css core.js lessons.js games.js games2.js cartoons.js app.js manifest.webmanifest icon-192.png icon-512.png www/
+
+      - name: Cài Capacitor và plugin giọng nói
+        run: npm install
+
+      - name: Tạo dự án Android
+        run: |
+          npx cap add android
+          bash android-setup.sh
+          npx cap sync android
+
+      - name: Dựng APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+          cp app/build/outputs/apk/debug/app-debug.apk ../BeVuiHocToan.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BeVuiHocToan-apk
+          path: BeVuiHocToan.apk
+
+      - name: Phát hành APK để tải trực tiếp
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.${{ github.run_number }}
+          name: Bé Vui Học Toán 1.${{ github.run_number }}
+          body: Tải tệp BeVuiHocToan.apk bên dưới về máy tính bảng Android và mở để cài đặt.
+          files: BeVuiHocToan.apk
+          make_latest: true
