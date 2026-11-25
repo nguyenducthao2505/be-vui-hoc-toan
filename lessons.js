@@ -79,7 +79,7 @@ function genShape() {
 }
 
 /* 6. Quy luật */
-const PAT_ITEMS = [['🔴', 'đỏ'], ['🔵', 'xanh dương'], ['🟡', 'vàng'], ['🟢', 'xanh lá'], ['🟣', 'tím'], ['⭐', 'ngôi sao'], ['🍎', 'táo'], ['🐟', 'cá']];
+const PAT_ITEMS = [['🔴', 'đỏ'], ['🔵', 'xanh dương'], ['🟡', 'vàng'], ['🟢', 'xanh lá'], ['🟣', 'tím'], ['⭐', 'ngôi sao'], ['👑', 'vương miện'], ['💎', 'kim cương'], ['🎀', 'nơ'], ['🌸', 'hoa'], ['🦄', 'kỳ lân'], ['🐚', 'vỏ sò']];
 function genPattern() {
   if (Math.random() < .6) {
     const pool = shuffle(PAT_ITEMS).slice(0, 4); const p = pick([[0, 1], [0, 0, 1], [0, 1, 1], [0, 1, 2]]);
@@ -102,8 +102,8 @@ function genPattern() {
 
 /* 7. Vị trí */
 function genPosition() {
-  const [o, on] = pick([['🌳', 'cái cây'], ['🏠', 'ngôi nhà'], ['📦', 'cái hộp'], ['⛺', 'cái lều']]);
-  const [a, an] = pick([['🐱', 'chú mèo'], ['🐶', 'chú cún'], ['🐰', 'bạn thỏ'], ['🐥', 'chú gà con'], ['🐻', 'bạn gấu']]);
+  const [o, on] = pick(settings.theme === 'princess' ? [['🏰', 'tòa lâu đài'], ['🌳', 'cái cây'], ['🎁', 'hộp quà'], ['🍄', 'cây nấm']] : [['🌳', 'cái cây'], ['🏠', 'ngôi nhà'], ['📦', 'cái hộp'], ['⛺', 'cái lều']]);
+  const [a, an] = pick(settings.theme === 'princess' ? [['👸', 'cô công chúa'], ['🧚', 'nàng tiên'], ['🦄', 'chú kỳ lân'], ['🧜‍♀️', 'nàng tiên cá'], ['🐱', 'mèo con']] : [['🐱', 'chú mèo'], ['🐶', 'chú cún'], ['🐰', 'bạn thỏ'], ['🐥', 'chú gà con'], ['🐻', 'bạn gấu']]);
   const h = Math.random() < .5; const pos = h ? pick(['trai', 'phai']) : pick(['tren', 'duoi']);
   const L = { trai: ['⬅️ Bên trái', 'bên trái'], phai: ['Bên phải ➡️', 'bên phải'], tren: ['⬆️ Ở trên', 'ở trên'], duoi: ['⬇️ Ở dưới', 'ở dưới'] };
   const cell = { trai: 3, phai: 5, tren: 1, duoi: 7 }[pos];
@@ -167,7 +167,7 @@ function runQuiz(key, { count = 10, mixed = false, listenAuto = settings.autoLis
         const k = q.options.findIndex(o => o.value === val);
         if (k >= 0 && !btns[k].disabled) choose(k);
         else if (val !== null && val !== q.answer) { tries++; sfx.bad(); Owl.mood('sad'); TTS.say(pick(RETRY)); if (tries >= 2) btns[q.options.findIndex(x => x.value === q.answer)].classList.add('hint'); }
-        else TTS.say('Cú Tí Hon chưa nghe rõ, con nói lại nhé.');
+        else TTS.say(Owl.name() + ' chưa nghe rõ, con nói lại nhé.');
       } catch (e) {
         mic.classList.remove('listening');
         heard.textContent = e === 'not-allowed' ? 'Cần cho phép dùng micro (xem Góc bố mẹ).' : e === 'network' ? 'Nhận giọng nói cần kết nối mạng.' : 'Không nghe được, con thử lại nhé.';

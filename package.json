@@ -1,0 +1,13 @@
+{
+  "name": "be-vui-hoc-toan",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bé Vui Học Toán – ứng dụng Android (Capacitor) dựng tự động bằng GitHub Actions",
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor-community/speech-recognition": "^7.0.1",
+    "@capacitor-community/text-to-speech": "^8.0.0"
+  }
+}

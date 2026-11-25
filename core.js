@@ -12,7 +12,7 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem('bvht_' + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem('bvht_' + k, JSON.stringify(v)); } catch (e) {} }
 };
-const settings = Object.assign({ max: 10, rate: 0.9, voice: true, sfx: true, autoListen: false, childName: '' }, store.get('settings', {}));
+const settings = Object.assign({ max: 10, rate: 0.9, voice: true, sfx: true, autoListen: false, childName: '', theme: 'princess', mascot: 'tien' }, store.get('settings', {}));
 const progress = Object.assign({ stars: 0, stickers: [], stats: {}, videos: [] }, store.get('progress', {}));
 function save() { store.set('settings', settings); store.set('progress', progress); }
 function addStar(n = 1) {
@@ -53,10 +53,21 @@ function parseNumber(text) {
   return null;
 }
 
+/* ---- Cầu nối với Android khi chạy dạng APK (Capacitor) ---- */
+const Native = (() => {
+  const C = window.Capacitor; const on = !!(C && C.isNativePlatform && C.isNativePlatform());
+  const P = on && C.Plugins ? C.Plugins : {};
+  return { on, tts: on ? P.TextToSpeech : null, sr: on ? P.SpeechRecognition : null };
+})();
+
 /* ---- Giọng đọc (Text-to-Speech) ---- */
 const TTS = {
-  voice: null, ok: 'speechSynthesis' in window,
+  voice: null, ok: !!Native.tts || 'speechSynthesis' in window, nativeVi: null,
   init() {
+    if (Native.tts) {
+      Native.tts.getSupportedLanguages().then(r => { this.nativeVi = (r.languages || []).some(l => /^vi/i.test(l)); }).catch(() => {});
+      return;
+    }
     if (!this.ok) return;
     const choose = () => {
       const vs = speechSynthesis.getVoices();
@@ -66,6 +77,14 @@ const TTS = {
   },
   say(text, opt = {}) {
     if (!settings.voice || !this.ok || !text) return Promise.resolve();
+    if (Native.tts) {
+      return new Promise(res => {
+        let done = false; const fin = () => { if (done) return; done = true; Owl.talk(false); res(); };
+        Owl.talk(true);
+        Native.tts.stop().catch(() => {}).then(() => Native.tts.speak({ text, lang: 'vi-VN', rate: opt.rate || settings.rate, pitch: opt.pitch || 1.15, volume: 1, category: 'playback' })).then(fin, fin);
+        setTimeout(fin, 3000 + text.length * 120 / (settings.rate || 1));
+      });
+    }
     speechSynthesis.cancel();
     return new Promise(res => {
       let done = false; const fin = () => { if (done) return; done = true; Owl.talk(false); res(); };
@@ -77,17 +96,29 @@ const TTS = {
       setTimeout(fin, 1500 + text.length * 110 / (settings.rate || 1));
     });
   },
-  stop() { if (this.ok) speechSynthesis.cancel(); Owl.talk(false); }
+  stop() { if (Native.tts) Native.tts.stop().catch(() => {}); else if ('speechSynthesis' in window) speechSynthesis.cancel(); Owl.talk(false); }
 };
 
 /* ---- Nhận giọng nói (Speech Recognition) ---- */
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+const WebSR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+const SR = Native.sr || WebSR; // có micro hay không
 let currentRec = null;
+async function listenNative() {
+  TTS.stop();
+  let p = await Native.sr.checkPermissions();
+  if (p.speechRecognition !== 'granted') { p = await Native.sr.requestPermissions(); if (p.speechRecognition !== 'granted') throw 'not-allowed'; }
+  const a = await Native.sr.available(); if (!a.available) throw 'unsupported';
+  currentRec = 'native';
+  try { const r = await Native.sr.start({ language: 'vi-VN', maxResults: 5, partialResults: false, popup: false }); return (r && r.matches) || []; }
+  catch (e) { const m = String(e && e.message || e); if (/no match|didn't understand|7/i.test(m)) return []; throw /network/i.test(m) ? 'network' : 'error'; }
+  finally { currentRec = null; }
+}
 function listen() {
+  if (Native.sr) return listenNative();
   return new Promise((res, rej) => {
-    if (!SR) return rej('unsupported');
+    if (!WebSR) return rej('unsupported');
     TTS.stop();
-    const r = new SR(); currentRec = r;
+    const r = new WebSR(); currentRec = r;
     r.lang = 'vi-VN'; r.interimResults = false; r.maxAlternatives = 5; r.continuous = false;
     let got = false;
     r.onresult = e => { got = true; res([...e.results[0]].map(a => a.transcript)); };
@@ -96,7 +127,7 @@ function listen() {
     try { r.start(); } catch (e) { rej('busy'); }
   });
 }
-function stopRec() { if (currentRec) { try { currentRec.abort(); } catch (e) {} currentRec = null; } }
+function stopRec() { if (currentRec === 'native') { Native.sr.stop().catch(() => {}); currentRec = null; return; } if (currentRec) { try { currentRec.abort(); } catch (e) {} currentRec = null; } }
 
 /* ---- Hiệu ứng âm thanh (tạo bằng WebAudio, không cần tệp) ---- */
 let actx;
@@ -162,24 +193,56 @@ const OWL_SVG = `<svg viewBox="0 0 100 110"><g class="body">
 <circle cx="28" cy="55" r="4" fill="#ff8fab" opacity=".7"/><circle cx="72" cy="55" r="4" fill="#ff8fab" opacity=".7"/>
 <path d="M40 100 l-4 6 M44 101 l0 6 M56 101 l0 6 M60 100 l4 6" stroke="#fb8500" stroke-width="3" stroke-linecap="round"/>
 </g></svg>`;
+const FAIRY_SVG = `<svg viewBox="0 0 100 120"><defs>
+<radialGradient id="fwg" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#e0c3fc"/><stop offset="1" stop-color="#8ec5fc" stop-opacity=".55"/></radialGradient>
+<linearGradient id="fdr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8fab"/><stop offset="1" stop-color="#c77dff"/></linearGradient></defs>
+<g class="body">
+<ellipse cx="50" cy="116" rx="24" ry="4" fill="rgba(0,0,0,.12)"/>
+<g class="wingL"><ellipse cx="28" cy="58" rx="20" ry="13" transform="rotate(-30 28 58)" fill="url(#fwg)" stroke="#fff" stroke-width="1.5"/><ellipse cx="30" cy="78" rx="12" ry="8" transform="rotate(20 30 78)" fill="url(#fwg)" stroke="#fff" stroke-width="1.5"/></g>
+<g class="wingR"><ellipse cx="72" cy="58" rx="20" ry="13" transform="rotate(30 72 58)" fill="url(#fwg)" stroke="#fff" stroke-width="1.5"/><ellipse cx="70" cy="78" rx="12" ry="8" transform="rotate(-20 70 78)" fill="url(#fwg)" stroke="#fff" stroke-width="1.5"/></g>
+<path d="M50 58 L30 104 Q50 110 70 104Z" fill="url(#fdr)"/>
+<path d="M33 98 Q50 106 67 98" stroke="#fff" stroke-width="2" fill="none" stroke-dasharray="3 3"/>
+<rect x="45" y="104" width="4" height="8" rx="2" fill="#ffd7b5"/><rect x="52" y="104" width="4" height="8" rx="2" fill="#ffd7b5"/>
+<path d="M38 70 Q28 74 24 66" stroke="#ffd7b5" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M62 70 Q72 66 76 56" stroke="#ffd7b5" stroke-width="4" fill="none" stroke-linecap="round"/>
+<line x1="77" y1="56" x2="84" y2="38" stroke="#b5838d" stroke-width="2.5" stroke-linecap="round"/>
+<path class="wandstar" d="M85 26 l2.6 5.6 6 .7 -4.5 4 1.2 6 -5.3-3 -5.3 3 1.2-6 -4.5-4 6-.7z" fill="#ffd166" stroke="#f4a261" stroke-width="1"/>
+<path d="M28 34 Q26 64 34 66 Q30 44 40 30Z M72 34 Q74 64 66 66 Q70 44 60 30Z" fill="#8d5524"/>
+<circle cx="50" cy="38" r="20" fill="#ffd7b5"/>
+<path d="M30 36 Q32 14 50 14 Q68 14 70 36 Q62 24 50 26 Q40 24 30 36Z" fill="#8d5524"/>
+<path d="M38 15 L42 6 L46 13 L50 4 L54 13 L58 6 L62 15Z" fill="#ffd166" stroke="#f4a261" stroke-width="1"/>
+<circle cx="50" cy="10" r="2" fill="#ff006e"/>
+<ellipse cx="42" cy="40" rx="3.2" ry="4" fill="#3d2c2e"/><ellipse cx="58" cy="40" rx="3.2" ry="4" fill="#3d2c2e"/>
+<circle cx="43" cy="38.5" r="1.2" fill="#fff"/><circle cx="59" cy="38.5" r="1.2" fill="#fff"/>
+<g class="eyelid" style="transform-box:fill-box"><rect x="37" y="34" width="10" height="11" rx="5" fill="#ffd7b5"/><rect x="53" y="34" width="10" height="11" rx="5" fill="#ffd7b5"/></g>
+<circle cx="36" cy="47" r="3.5" fill="#ff8fab" opacity=".7"/><circle cx="64" cy="47" r="3.5" fill="#ff8fab" opacity=".7"/>
+<path class="beak" style="transform-box:fill-box;transform-origin:50% 0" d="M45 49 Q50 54 55 49 Q50 51 45 49Z" fill="#e5383b"/>
+</g></svg>`;
 const Owl = {
-  html(cls = '') { return `<div class="owl ${cls}" onclick="Owl.poke(this)">${OWL_SVG}</div>`; },
+  html(cls = '') { return `<div class="owl ${cls}" onclick="Owl.poke(this)">${settings.mascot === 'cu' ? OWL_SVG : FAIRY_SVG}</div>`; },
+  name() { return settings.mascot === 'cu' ? 'Cú Tí Hon' : 'Tiên Nhỏ'; },
   each(f) { $$('.owl').forEach(f); },
   talk(on) { this.each(o => o.classList.toggle('talk', on)); },
   mood(m) { this.each(o => { o.classList.remove('happy', 'sad'); void o.offsetWidth; o.classList.add(m); setTimeout(() => o.classList.remove(m), 1600); }); },
-  poke(el) { sfx.boing(); this.mood('happy'); TTS.say(pick(['Chào bạn nhỏ! Mình là Cú Tí Hon.', 'Hôm nay mình cùng học toán nhé!', 'Hu hu! Bạn giỏi lắm đó!', 'Cùng chơi với mình nào!'])); }
+  poke(el) { sfx.boing(); this.mood('happy'); TTS.say(pick([`Chào bạn nhỏ! Mình là ${this.name()}.`, 'Hôm nay mình cùng học toán nhé!', settings.mascot === 'cu' ? 'Hu hu! Bạn giỏi lắm đó!' : 'Phép thuật toán học, biến!', 'Cùng chơi với mình nào!'])); }
 };
 
-const PRAISE = ['Giỏi quá!', 'Đúng rồi!', 'Tuyệt vời!', 'Con làm tốt lắm!', 'Hoan hô!', 'Xuất sắc!', 'Đúng rồi, giỏi ghê!'];
+const PRAISE = ['Giỏi quá!', 'Đúng rồi!', 'Tuyệt vời!', 'Con làm tốt lắm!', 'Hoan hô!', 'Xuất sắc!', 'Đúng rồi, giỏi ghê!', 'Con giỏi như công chúa vậy!', 'Lấp lánh quá, đúng rồi!'];
 const RETRY = ['Chưa đúng rồi, con thử lại nhé!', 'Gần đúng rồi, thử lần nữa nào!', 'Không sao, con nghĩ thêm chút nữa nhé!'];
-const STICKERS = ['🦁', '🐯', '🐼', '🐨', '🐸', '🐵', '🦊', '🐰', '🐻', '🐷', '🐮', '🦄', '🐙', '🦕', '🐳', '🦋', '🐢', '🦜', '🐧', '🦒', '🐘', '🦓', '🐬', '🐝', '🌈', '🚀', '🚂', '🎠', '🍦', '🍩'];
+const STICKERS = ['👑', '💎', '🦄', '🧚', '🧜‍♀️', '👸', '🏰', '🎀', '🐚', '🪄', '🧁', '🌸', '💖', '🌟', '🦁', '🐯', '🐼', '🐨', '🐸', '🐵', '🦊', '🐰', '🐻', '🐷', '🐮', '🦄', '🐙', '🦕', '🐳', '🦋', '🐢', '🦜', '🐧', '🦒', '🐘', '🦓', '🐬', '🐝', '🌈', '🚀', '🚂', '🎠', '🍦', '🍩'];
 
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2500); }
 function setTitle(t) { $('#title').textContent = t; document.title = t + ' – Bé Vui Học Toán'; }
 function go(h) { location.hash = h; }
 
 /* ---- Đồ vật để đếm ---- */
-const THINGS = [['🍎', 'quả táo'], ['🍌', 'quả chuối'], ['🐟', 'con cá'], ['🐥', 'chú gà con'], ['⭐', 'ngôi sao'], ['🚗', 'chiếc ô tô'], ['🎈', 'quả bóng bay'], ['🐞', 'con bọ rùa'], ['🍓', 'quả dâu'], ['🐶', 'chú cún'], ['🌸', 'bông hoa'], ['🦋', 'con bướm'], ['🐢', 'chú rùa'], ['🍊', 'quả cam']];
+const THINGS_ANIMAL = [['🍎', 'quả táo'], ['🍌', 'quả chuối'], ['🐟', 'con cá'], ['🐥', 'chú gà con'], ['⭐', 'ngôi sao'], ['🚗', 'chiếc ô tô'], ['🎈', 'quả bóng bay'], ['🐞', 'con bọ rùa'], ['🍓', 'quả dâu'], ['🐶', 'chú cún'], ['🌸', 'bông hoa'], ['🦋', 'con bướm'], ['🐢', 'chú rùa'], ['🍊', 'quả cam']];
+const THINGS_PRINCESS = [['👑', 'chiếc vương miện'], ['💎', 'viên kim cương'], ['🐚', 'vỏ sò'], ['🦄', 'chú kỳ lân'], ['🧁', 'chiếc bánh'], ['🎀', 'chiếc nơ'], ['🌸', 'bông hoa'], ['🦋', 'con bướm'], ['🧚', 'nàng tiên'], ['🧜‍♀️', 'nàng tiên cá'], ['👸', 'cô công chúa'], ['🪄', 'cây đũa thần'], ['🍓', 'quả dâu'], ['⭐', 'ngôi sao'], ['🐠', 'chú cá'], ['💍', 'chiếc nhẫn'], ['🌷', 'bông tulip'], ['🍭', 'cây kẹo mút'], ['🏰', 'tòa lâu đài'], ['💖', 'trái tim']];
+const THINGS = [];
+function applyTheme() {
+  THINGS.splice(0, THINGS.length, ...(settings.theme === 'princess' ? THINGS_PRINCESS : THINGS_ANIMAL));
+  document.body.classList.toggle('princess', settings.theme === 'princess');
+}
 const COLORS = ['#e63946', '#fb8500', '#ffb703', '#2a9d8f', '#219ebc', '#8e44ad', '#ff006e', '#52b788'];
 function objs(n, emoji, cls = '') {
   return `<div class="objs ${typeof cls === 'string' ? cls : ''}">${Array.from({ length: n }, (_, k) =>

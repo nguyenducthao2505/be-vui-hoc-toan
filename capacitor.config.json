@@ -1,0 +1,6 @@
+{
+  "appId": "vn.bevuihoctoan.app",
+  "appName": "Bé Vui Học Toán",
+  "webDir": "www",
+  "android": { "backgroundColor": "#ffd6e8" }
+}

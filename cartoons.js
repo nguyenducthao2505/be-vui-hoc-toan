@@ -23,6 +23,101 @@ const spread = (n, from = 12, to = 88) => Array.from({ length: n }, (_, k) => n 
 
 const CARTOONS = [
   {
+    id: 'kimcuong', title: 'Công chúa và kim cương', em: '👸💎👑', sub: 'Đếm đến 10', quiz: 'dem', bg: 'castle',
+    async play(S) {
+      const n = rnd(5, Math.min(10, Math.max(5, settings.max)));
+      S.add('🏰', 85, 40).style.fontSize = '130px'; const pr = S.add('👸', 16, 62); pr.style.fontSize = '100px';
+      await S.say(`Công chúa muốn làm một chiếc vương miện thật đẹp. Nàng tiên mang đến những viên kim cương. Mình cùng đếm nhé!`);
+      const fy = S.add('🧚', 50, 15, 'wiggle');
+      const xs = spread(n, 30, 72);
+      for (let k = 0; k < n; k++) {
+        fy.style.left = xs[k] + '%'; await S.wait(250);
+        const d = S.add('💎', xs[k], 18); sfx.pop(); await S.wait(50); d.style.top = (k % 2 ? 70 : 60) + '%';
+        S.label(k + 1, xs[k], k % 2 ? 84 : 46); await S.say(numWord(k + 1) + '!', 1);
+      }
+      S.board(`${n} 💎`); await S.say(`Có tất cả ${numWord(n)} viên kim cương!`);
+      const cr = S.add('👑', 16, 30); cr.style.fontSize = '80px'; cr.classList.add('hop'); sfx.win();
+      await S.say('Vương miện đã xong. Công chúa xinh đẹp cảm ơn con đã đếm giúp!');
+    }
+  },
+  {
+    id: 'tienca', title: 'Tiên cá nhặt vỏ sò', em: '🧜‍♀️🐚➕', sub: 'Phép cộng dưới biển', quiz: 'cong', bg: 'sea',
+    async play(S) {
+      const a = rnd(1, 5), b = rnd(1, Math.min(4, settings.max - a)), s = a + b;
+      ['🫧', '🐠', '🪸', '🫧', '🐡'].forEach((e, k) => S.add(e, 8 + k * 21, k % 2 ? 22 : 12, 'wiggle').style.fontSize = '40px');
+      const m = S.add('🧜‍♀️', 12, 55); m.style.fontSize = '110px'; m.classList.add('wiggle');
+      const xs = spread(s, 30, 90);
+      for (let k = 0; k < a; k++) { S.add('🐚', xs[k], 80, 'hop'); sfx.pop(); await S.wait(250); }
+      S.board(`${a}`); await S.say(`Nàng tiên cá đã nhặt được ${numWord(a)} vỏ sò.`);
+      await S.say(`Sóng biển đưa đến thêm ${numWord(b)} vỏ sò nữa!`);
+      for (let k = a; k < s; k++) { const el = S.add('🐚', 110, 30); sfx.whoosh(); await S.wait(60); el.style.left = xs[k] + '%'; el.style.top = '80%'; await S.wait(450); }
+      S.board(`${a} + ${b}`); await S.say('Mình cùng đếm tất cả nhé.');
+      for (let k = 0; k < s; k++) { S.label(k + 1, xs[k], 64); sfx.pop(); await S.say(numWord(k + 1), 1); }
+      S.board(`${a} + ${b} = ${s}`); sfx.ok(); await S.say(`${numWord(a)} cộng ${numWord(b)} bằng ${numWord(s)}. Nàng tiên cá có ${numWord(s)} vỏ sò!`);
+    }
+  },
+  {
+    id: 'rao', title: 'Nàng tiên rắc sao ước', em: '🧚✨⭐', sub: 'Phép trừ', quiz: 'tru', bg: 'night',
+    async play(S) {
+      const a = rnd(4, Math.min(9, Math.max(4, settings.max))), b = rnd(1, a - 1), r = a - b;
+      S.add('🌙', 88, 14); const f = S.add('🧚', 12, 70); f.style.fontSize = '100px'; f.classList.add('wiggle');
+      const xs = spread(a, 25, 92), st = [];
+      for (let k = 0; k < a; k++) { const e = S.add('⭐', xs[k], k % 2 ? 30 : 45, 'hop'); st.push(e); sfx.pop(); await S.wait(200); }
+      S.board(`${a}`); await S.say(`Trên bầu trời có ${numWord(a)} ngôi sao lấp lánh.`);
+      await S.say(`Nàng tiên vẫy đũa thần, gửi ${numWord(b)} ngôi sao đi thực hiện điều ước. Bay đi nào!`);
+      for (let k = 0; k < b; k++) { st[a - 1 - k].classList.add('flyaway'); sfx.whoosh(); await S.wait(300); }
+      S.board(`${a} − ${b}`); await S.say('Còn lại mấy ngôi sao nhỉ?'); await S.wait(600);
+      for (let k = 0; k < r; k++) { S.label(k + 1, xs[k], k % 2 ? 18 : 33); sfx.pop(); await S.say(numWord(k + 1), 1); }
+      S.board(`${a} − ${b} = ${r}`); sfx.ok(); await S.say(`${numWord(a)} trừ ${numWord(b)} còn ${numWord(r)}.`);
+    }
+  },
+  {
+    id: 'laudai', title: 'Xây lâu đài hình học', em: '🏰🔺🟪', sub: 'Các hình cơ bản', quiz: 'hinh', bg: 'castle',
+    async play(S) {
+      const parts = [
+        ['chunhat', '#c77dff', 'làm tháp bên trái', 24, 58, 9, 90, 3], ['chunhat', '#c77dff', 'làm tháp bên phải', 76, 58, 9, 90, 3],
+        ['vuong', '#ffafcc', 'làm thân lâu đài', 50, 64, 26, 0, 2],
+        ['tamgiac', '#ff006e', 'làm mái tháp', 24, 26, 12, 0, 4], ['tamgiac', '#ff006e', 'làm mái tháp', 76, 26, 12, 0, 4], ['tamgiac', '#7209b7', 'làm mái chính', 50, 30, 22, 0, 3],
+        ['tron', '#ffd166', 'làm cửa sổ tròn', 50, 54, 5, 0, 5], ['chunhat', '#8d5524', 'làm cổng lâu đài', 50, 82, 6, 90, 5]
+      ];
+      await S.say('Các hình học rủ nhau xây lâu đài cho công chúa. Mình xem nhé!');
+      const said = {};
+      for (const [t, c, txt, x, y, w, rot, z] of parts) {
+        const d = document.createElement('div'); d.className = 'big-shape'; d.innerHTML = shapeSVG(t, c, '100%');
+        const sv = d.querySelector('svg'); sv.removeAttribute('height'); sv.style.display = 'block'; if (rot) sv.style.transform = `rotate(${rot}deg)`;
+        d.style.cssText += `;left:50%;top:50%;width:22%;z-index:${z}`; S.el.appendChild(d);
+        d.animate([{ transform: 'translate(-50%,-50%) scale(0)' }, { transform: 'translate(-50%,-50%) scale(1)' }], { duration: 450, easing: 'ease-out' }); sfx.boing();
+        if (!said[t]) { S.board(SHAPES[t].replace('hình', 'Hình')); await S.say(`Đây là ${SHAPES[t]}.`); said[t] = 1; } else await S.wait(500);
+        d.style.left = x + '%'; d.style.top = y + '%'; d.style.width = w + '%';
+        await S.say(`${SHAPES[t]} ${txt}.`);
+      }
+      S.add('👸', 88, 80, 'hop').style.fontSize = '80px'; S.add('🚩', 24, 8); S.add('🚩', 76, 8);
+      S.board('🏰 Lâu đài xong rồi!'); sfx.win();
+      await S.say('Hình chữ nhật, hình vuông, hình tam giác và hình tròn đã xây thành tòa lâu đài thật đẹp!');
+    }
+  },
+  {
+    id: 'kylan', title: 'Kỳ lân và cầu vồng', em: '🦄🌈💖', sub: 'Tìm quy luật', quiz: 'quyluat', bg: 'dream',
+    async play(S) {
+      S.add('🌈', 50, 28).style.fontSize = '160px';
+      const u = S.add('🦄', 8, 70); u.style.fontSize = '90px';
+      await S.say('Kỳ lân đi dạo, mỗi bước lại để lại một món quà. Con để ý quy luật nhé!');
+      for (const set of [['💖', '💜'], ['⭐', '⭐', '🌸']]) {
+        S.clear(); S.add('🌈', 50, 28).style.fontSize = '160px'; const un = S.add('🦄', 8, 70); un.style.fontSize = '90px';
+        const L = set.length === 2 ? 6 : 6; const xs = spread(L + 1, 14, 90);
+        for (let k = 0; k < L; k++) { un.style.left = xs[k] + '%'; await S.wait(450); S.add(set[k % set.length], xs[k], 86, 'hop'); sfx.pop(); }
+        un.style.left = '96%';
+        const q = S.add('<span style="border:4px dashed #fff;border-radius:16px;padding:0 10px">?</span>', xs[L], 86); 
+        S.board(set.join(' ') + ' …');
+        await S.say(set.length === 2 ? 'Tim hồng, tim tím, tim hồng, tim tím. Tiếp theo là gì nhỉ?' : 'Sao, sao, hoa. Sao, sao, hoa. Tiếp theo là gì nhỉ?');
+        await S.wait(1500);
+        q.innerHTML = set[L % set.length]; sfx.ok(); Confetti.burst(null, null, 50);
+        await S.say(set.length === 2 ? 'Đúng rồi, là tim hồng!' : 'Đúng rồi, là ngôi sao!');
+      }
+      await S.say('Con giỏi tìm quy luật lắm!');
+    }
+  },
+  {
     id: 'dem', title: 'Các bạn thú đến chơi', em: '🐰🐥🐸', sub: 'Đếm từ 1 đến 10', quiz: 'dem', bg: '',
     async play(S) {
       const n = rnd(5, Math.min(10, Math.max(5, settings.max))); const [a, an] = pick([['🐰', 'bạn thỏ'], ['🐥', 'chú gà con'], ['🐸', 'chú ếch'], ['🐷', 'chú heo'], ['🐻', 'bạn gấu']]);
@@ -169,7 +264,7 @@ function cartoonsHome() {
   $$('.cthumb[data-yt]', app).forEach(b => b.onclick = () => go('yt/' + b.dataset.yt));
   TTS.say('Con muốn xem phim hoạt hình nào?');
 }
-function pickBg(bg) { return bg === 'night' ? 'linear-gradient(#1d3557,#457b9d)' : bg === 'sea' ? 'linear-gradient(#90e0ef,#0077b6)' : 'linear-gradient(#8ecae6,#95d5b2)'; }
+function pickBg(bg) { return bg === 'night' ? 'linear-gradient(#1d3557,#457b9d)' : bg === 'sea' ? 'linear-gradient(#90e0ef,#0077b6)' : bg === 'castle' ? 'linear-gradient(#ffc8dd,#f3e8ff)' : bg === 'dream' ? 'linear-gradient(#cdb4db,#bde0fe)' : 'linear-gradient(#8ecae6,#95d5b2)'; }
 function splitEmoji(s) { return typeof Intl !== 'undefined' && Intl.Segmenter ? [...new Intl.Segmenter().segment(s)].map(x => x.segment) : [...s]; }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 

@@ -195,3 +195,53 @@ input{font-family:inherit;user-select:text;-webkit-user-select:text}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:90}
 
 @media (max-width:600px){.opt{min-width:96px;min-height:90px}.scene{grid-template-columns:repeat(3,80px);grid-template-rows:repeat(3,76px);font-size:50px}.mgrid{gap:8px}}
+
+/* ===== Chủ đề Công chúa – Nàng tiên ===== */
+body.princess{background:linear-gradient(180deg,#ffd6e8 0%,#f3e8ff 50%,#e0f7fa 100%)}
+body.princess #topbar{background:linear-gradient(90deg,#ff8fab,#c77dff)}
+body.princess #topbar h1{color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.15)}
+body.princess .progress>div{background:linear-gradient(90deg,#ff8fab,#c77dff)}
+body.princess .cloud{opacity:.55}
+.sparkle{position:absolute;font-size:26px;animation:twinkle 3s ease-in-out infinite;opacity:.8}
+@keyframes twinkle{0%,100%{transform:scale(.5) rotate(0);opacity:.2}50%{transform:scale(1.1) rotate(20deg);opacity:1}}
+.owl .wandstar{transform-box:fill-box;transform-origin:50% 50%;animation:twinkle 1.6s infinite}
+.owl.happy .wandstar{animation:spin .6s infinite}
+.stage.castle{background:linear-gradient(#ffc8dd 0%,#f3e8ff 60%,#b9fbc0 60%,#80ed99 100%)}
+.stage.dream{background:linear-gradient(#cdb4db 0%,#ffc8dd 50%,#bde0fe 100%)}
+
+/* ===== Trò chơi mới ===== */
+.arena{position:relative;flex:1;min-height:440px;border-radius:26px;overflow:hidden;touch-action:none}
+.arena.sea{background:linear-gradient(#90e0ef,#0077b6)}
+.arena.night{background:radial-gradient(circle at 70% 20%,#3a0ca3,#10002b)}
+.pearl{position:absolute;width:84px;height:84px;margin-left:-42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:#5a189a;background:radial-gradient(circle at 35% 30%,#fff,#e0c3fc 60%,#b8c0ff);box-shadow:0 0 12px rgba(255,255,255,.7)}
+.pearl.got{animation:popout .35s forwards}
+.mermaid{position:absolute;bottom:6px;font-size:92px;transform:translateX(-50%);transition:left .08s linear;filter:drop-shadow(0 6px 4px rgba(0,0,0,.25))}
+.mermaid.yum{animation:jump .4s}
+.dot{position:absolute;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;border:none;background:radial-gradient(circle,#fff6a5,#ffd166);font-size:26px;font-weight:900;color:#3c096c;box-shadow:0 0 16px #ffd166}
+.dot.done{background:radial-gradient(circle,#fff,#c77dff);color:#fff;box-shadow:0 0 18px #c77dff}
+.dot.next{animation:pulse 1s infinite}
+.arena svg.lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.reveal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:120px;animation:spin 1s}
+.tea{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:14px;align-items:center}
+.plate{min-height:170px;width:min(640px,100%);border-radius:50%/40%;background:radial-gradient(#fff,#ffe5ec 70%,#ffc8dd);display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;padding:30px 50px;font-size:54px;box-shadow:0 8px 0 rgba(0,0,0,.08)}
+.plate span{cursor:pointer;animation:popin .3s}
+.tray{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:58px}
+.tray button{border:none;background:#fff;border-radius:20px;width:90px;height:90px;font-size:54px;box-shadow:0 5px 0 rgba(0,0,0,.12)}
+.cbn{max-width:1100px;margin:0 auto;display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.cbn .pic{background:#fff;border-radius:26px;padding:10px;box-shadow:0 6px 0 rgba(0,0,0,.08);flex:1 1 520px;max-width:680px}
+.cbn .pic svg{width:100%;height:auto;display:block}
+.cbn .pic svg .rg{stroke:#555;stroke-width:2.5;cursor:pointer;transition:fill .3s}
+.cbn .pic svg text{font-weight:900;font-size:18px;fill:#333;pointer-events:none;text-anchor:middle;dominant-baseline:middle}
+.cbn .pic svg .rg.bad{animation:shake .4s}
+.palette{display:flex;flex-direction:column;gap:12px}
+.palette button{width:110px;height:86px;border-radius:22px;border:5px solid transparent;font-size:36px;font-weight:900;color:#333;box-shadow:0 5px 0 rgba(0,0,0,.15)}
+.palette button.on{border-color:#333;transform:scale(1.08)}
+.nline{position:relative;width:100%;max-width:1000px;margin:0 auto;padding:110px 0 20px}
+.nline .tiles{display:grid;grid-template-columns:repeat(11,1fr);gap:6px}
+.nline .tiles button{height:76px;border:none;border-radius:16px;font-size:30px;font-weight:900;box-shadow:0 5px 0 rgba(0,0,0,.15);background:#fff}
+.nline .tiles button:nth-child(odd){background:#ffe5ec}.nline .tiles button:nth-child(even){background:#e7c6ff}
+.nline .tiles button.ok{background:#b7efc5}
+.nline .uni{position:absolute;top:20px;font-size:72px;transform:translateX(-50%);transition:left .45s ease-in-out}
+.nline .uni.jumping{animation:hop .45s ease-in-out}
+@media (max-width:600px){.nline .tiles button{height:54px;font-size:20px}.palette{flex-direction:row;flex-wrap:wrap;justify-content:center}.palette button{width:70px;height:60px;font-size:24px}}
+.nline .tiles button.hint{outline:6px dashed #2a9d8f;outline-offset:2px;animation:pulse 1s infinite}

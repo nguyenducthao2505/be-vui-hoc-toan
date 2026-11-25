@@ -6,12 +6,22 @@
 
 | Nhóm | Nội dung |
 |---|---|
-| 🎬 Phim hoạt hình (7 phim) | Các bạn thú đến chơi (đếm 1–10) · Chim non về tổ (phép cộng) · Bóng bay bay mất (phép trừ) · Ngôi nhà hình học · Cá sấu tham ăn (lớn hơn/bé hơn) · Mèo con trốn tìm (vị trí) · Tên lửa đếm ngược. Mỗi lần xem, số liệu đổi ngẫu nhiên nên câu chuyện cũng khác đi. |
-| 📚 Bài học | Học số 0–10 / 0–20 · Đếm số · So sánh (>, <, =) · Phép cộng · Phép trừ · Hình học (tròn, vuông, tam giác, chữ nhật) · Quy luật · Vị trí (trên, dưới, trái, phải) |
-| 🎮 Trò chơi | Bắt bóng bay · Lật thẻ ghép đôi · Kéo thả xếp hình · Thử thách giọng nói |
-| 🎤 Giọng nói | Cú Tí Hon đọc câu hỏi và khen bé bằng tiếng Việt. Bé bấm micro rồi nói đáp án (“năm”, “lớn hơn”, “hình tròn”, “bên trái”…). |
-| 🏆 Khích lệ | Sao, pháo giấy, hình dán sưu tập, linh vật nhảy múa khi bé làm đúng |
-| 👨‍👩‍👧 Góc bố mẹ | Có câu hỏi khoá dành cho người lớn. Trong đó có: phạm vi số 10/20, tốc độ đọc, bật/tắt âm thanh, tự bật micro, xem tiến độ từng bài, thêm video YouTube do bố mẹ tự chọn. |
+| 🎬 Phim hoạt hình (12 phim) | Công chúa và kim cương · Tiên cá nhặt vỏ sò · Nàng tiên rắc sao ước · Xây lâu đài hình học · Kỳ lân và cầu vồng · Các bạn thú đến chơi · Chim non về tổ · Bóng bay bay mất · Ngôi nhà hình học · Cá sấu tham ăn · Mèo con trốn tìm · Tên lửa đếm ngược |
+| 🎮 Trò chơi (9) | Tiên cá bắt ngọc · Tô màu theo số · Tiệc trà công chúa · Nối sao thần kỳ · Kỳ lân nhảy số · Bắt bóng bay · Lật thẻ · Xếp hình · Thử thách giọng nói |
+| 📚 Bài học | Học số · Đếm · So sánh · Cộng · Trừ · Hình học · Quy luật · Vị trí |
+| 👑 Chủ đề | Công chúa – Nàng tiên – Tiên cá (mặc định) hoặc Thú cưng – Hoa quả; nhân vật dẫn dắt Tiên Nhỏ hoặc Cú Tí Hon |
+| 🎤 Giọng nói | Đọc câu hỏi, khen bé; bé bấm micro và nói đáp án |
+| 👨‍👩‍👧 Góc bố mẹ | Chủ đề, phạm vi số 10/20, tốc độ đọc, tiến độ, thêm video YouTube |
+
+## Bản APK (cài thẳng lên Android, chạy offline)
+
+Mỗi lần có thay đổi trên nhánh `main`, GitHub Actions (tệp `.github/workflows/build-apk.yml`) tự dựng APK và đăng vào mục **Releases** của repository.
+
+1. Trên máy tính bảng, mở trang Releases của repository → bản mới nhất → tải **BeVuiHocToan.apk**.
+2. Mở tệp vừa tải; nếu máy hỏi, cho phép Chrome/Trình quản lý tệp **cài ứng dụng không rõ nguồn gốc**.
+3. Bản APK dùng giọng đọc và nhận giọng nói của Android. Để bé nói đáp án khi không có mạng: ứng dụng Google → Cài đặt → Giọng nói → Nhận dạng lời nói ngoại tuyến → tải Tiếng Việt (nếu máy hỗ trợ).
+
+Ghi chú: APK được ký bằng khoá gỡ lỗi `debug.keystore` để mỗi bản mới cài đè được lên bản cũ; khoá này chỉ phù hợp dùng trong gia đình, không dùng để đưa lên Google Play.
 
 ## Đưa lên GitHub và chạy (khoảng 5 phút)
 
@@ -44,7 +54,9 @@ lessons.js            7 dạng bài + học số + màn hoàn thành
 games.js              bóng bay, lật thẻ, xếp hình
 cartoons.js           7 phim hoạt hình + video YouTube
 app.js                trang chủ, góc bố mẹ, điều hướng
-sw.js                 chạy offline
+sw.js                 chạy offline (bản web)
+games2.js             5 trò chơi chủ đề công chúa
+package.json, capacitor.config.json, android-setup.sh, android-icon-*.png, debug.keystore   dựng APK
 manifest.webmanifest  thông tin cài đặt ứng dụng
 icon-*.png            biểu tượng
 ```
