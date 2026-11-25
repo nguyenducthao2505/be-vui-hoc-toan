@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Chạy sau "npx cap add android": gắn biểu tượng, màn hình chờ, quyền micro, khoá ký cố định, số phiên bản.
 set -e
+# Tăng thời gian chờ tải Gradle (mạng máy chủ đôi khi chậm)
+W=android/gradle/wrapper/gradle-wrapper.properties
+if grep -q '^networkTimeout' $W; then sed -i 's/^networkTimeout=.*/networkTimeout=120000/' $W; else echo 'networkTimeout=120000' >> $W; fi
 RES=android/app/src/main/res
 for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
   mkdir -p $RES/mipmap-$d
