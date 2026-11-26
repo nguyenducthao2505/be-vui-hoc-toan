@@ -42,7 +42,7 @@ function genCompare() {
 
 /* 3. Phép cộng */
 /* Cộng không nhớ / trừ không nhớ trong phạm vi 100 (chương trình Toán 1) */
-function noCarryAdd(M = settings.max) {
+function noCarryAddRaw(M) {
   if (M <= 20 || Math.random() < .25) { const s = rnd(1, Math.min(M, 10)); const a = rnd(0, s); return [a, s - a]; }
   const k = rnd(0, 2);
   if (k === 0) { const a = 10 * rnd(1, 8); return [a, 10 * rnd(1, 9 - a / 10)]; }
@@ -50,7 +50,7 @@ function noCarryAdd(M = settings.max) {
   const at = rnd(1, 8), au = rnd(0, 8), bt = rnd(1, 9 - at), bu = rnd(0, 9 - au);
   return [at * 10 + au, bt * 10 + bu];
 }
-function noBorrowSub(M = settings.max) {
+function noBorrowSubRaw(M) {
   if (M <= 20 || Math.random() < .25) { const a = rnd(1, Math.min(M, 10)); return [a, rnd(0, a)]; }
   const k = rnd(0, 2);
   if (k === 0) { const a = 10 * rnd(2, 9); return [a, 10 * rnd(1, a / 10 - 1)]; }
@@ -58,6 +58,9 @@ function noBorrowSub(M = settings.max) {
   const at = rnd(2, 9), au = rnd(0, 9), bt = rnd(1, at - 1), bu = rnd(0, au);
   return [at * 10 + au, bt * 10 + bu];
 }
+/* Luôn giữ kết quả trong phạm vi đang chọn (10, 20, 30 … 100) */
+function noCarryAdd(M = settings.max) { for (let i = 0; i < 60; i++) { const [a, b] = noCarryAddRaw(M); if (a + b <= M) return [a, b]; } const s = rnd(1, Math.min(M, 10)), a = rnd(0, s); return [a, s - a]; }
+function noBorrowSub(M = settings.max) { for (let i = 0; i < 60; i++) { const [a, b] = noBorrowSubRaw(M); if (a <= M) return [a, b]; } const a = rnd(1, Math.min(M, 10)); return [a, rnd(0, a)]; }
 function genAdd() {
   const M = settings.max; const [a, b] = M > 20 ? noCarryAdd(M) : (() => { const s = rnd(1, M), x = rnd(0, s); return [x, s - x]; })(); const s = a + b; const [e] = pick(THINGS);
   const vis = s > 10 ? `<div class="eq">${placeValue(a)}<span class="opsym">+</span>${placeValue(b)}</div>` : s <= 10 ? `<div class="eq">${objs(a, e)}<span class="opsym">+</span>${objs(b, e)}</div>` : '';
@@ -116,7 +119,7 @@ function genPattern() {
       parse: t => { t = t.toLowerCase(); const f = used.find(x => t.includes(x[1])); return f ? f[0] : null; },
       onCorrect: () => { $('.qbox', app).textContent = ans[0]; } };
   }
-  const M = settings.max; const step = pick(M > 20 ? [1, -1, 2, 5, 10, 10, -10] : [1, 1, -1]); const L = 5; const span = Math.abs(step) * (L - 1);
+  const M = settings.max; const step = pick((M > 20 ? [1, -1, 2, 5, 10, 10, -10] : [1, 1, -1]).filter(x => Math.abs(x) * 4 <= M)); const L = 5; const span = Math.abs(step) * (L - 1);
   const start = step > 0 ? rnd(0, M - span) : rnd(span, M);
   const seq = Array.from({ length: L }, (_, k) => start + step * k); const idx = rnd(1, L - 1); const ans = seq[idx];
   return numQ({ prompt: 'Số nào còn thiếu?', speech: Math.abs(step) === 10 ? 'Đếm theo chục nào! Số nào còn thiếu?' : step > 0 ? 'Đếm thêm nào! Số nào còn thiếu?' : 'Đếm lùi nào! Số nào còn thiếu?',
@@ -144,10 +147,10 @@ function genTens() {
   const n = rnd(11, Math.max(20, settings.max)); const t = Math.floor(n / 10), u = n % 10; const v = rnd(0, 3);
   const big = `<div class="big-num" style="font-size:1.8em">${n}</div>`;
   const showPV = () => { $('.visual', app).insertAdjacentHTML('beforeend', placeValue(n)); };
-  if (v === 0) return numQ({ prompt: 'Đây là số nào?', speech: 'Mỗi thanh là một chục, mỗi ô nhỏ là một đơn vị. Đây là số nào?', visual: placeValue(n), options: numOptions(n, 10, 100), answer: n, explain: `${pvWords(n)} là số ${numWord(n)}.` });
+  if (v === 0) return numQ({ prompt: 'Đây là số nào?', speech: 'Mỗi thanh là một chục, mỗi ô nhỏ là một đơn vị. Đây là số nào?', visual: placeValue(n), options: numOptions(n, 10, Math.max(20, settings.max)), answer: n, explain: `${pvWords(n)} là số ${numWord(n)}.` });
   if (v === 1) return numQ({ prompt: `Số ${n} có mấy chục?`, speech: `Số ${numWord(n)} có mấy chục?`, visual: big, options: numOptions(t, 0, 10), answer: t, explain: `Số ${numWord(n)} gồm ${pvWords(n)}.`, onCorrect: showPV });
   if (v === 2) return numQ({ prompt: `Số ${n} có mấy đơn vị?`, speech: `Số ${numWord(n)} có mấy đơn vị?`, visual: big, options: numOptions(u, 0, 9), answer: u, explain: `Số ${numWord(n)} gồm ${pvWords(n)}.`, onCorrect: showPV });
-  return numQ({ prompt: `${t} chục và ${u} đơn vị là số nào?`, speech: `${numWord(t)} chục và ${numWord(u)} đơn vị là số nào?`, visual: placeValue(n), options: numOptions(n, 10, 100), answer: n, explain: `Là số ${numWord(n)}.` });
+  return numQ({ prompt: `${t} chục và ${u} đơn vị là số nào?`, speech: `${numWord(t)} chục và ${numWord(u)} đơn vị là số nào?`, visual: placeValue(n), options: numOptions(n, 10, Math.max(20, settings.max)), answer: n, explain: `Là số ${numWord(n)}.` });
 }
 
 const MODULES = {
@@ -242,7 +245,7 @@ function learnNumbers() {
         <div class="learn-word">${numWord(n)}</div>${n > 20 ? placeValue(n) + `<div class="pv-cap">${pvWords(n)}</div>` : n ? objs(n, e) : '<div style="font-size:50px">🫙 (không có gì)</div>'}</div>
       <div class="row"><button class="btn prev">⬅️ Trước</button><button class="btn primary say">🔊 Nghe</button>${SR ? '<button class="btn mic2">🎤 Con đọc</button>' : ''}<button class="btn next">Sau ➡️</button></div>
       <div class="heard" style="font-size:20px"></div>
-      ${big ? `<div class="h100">${Array.from({ length: 100 }, (_, k) => `<button class="chip ${k + 1 === n ? 'on' : ''}" data-n="${k + 1}">${k + 1}</button>`).join('')}</div>` : `<div class="num-strip">${Array.from({ length: settings.max + 1 }, (_, k) => `<button class="chip ${k === n ? 'on' : ''}" data-n="${k}">${k}</button>`).join('')}</div>`}</div>`;
+      ${big ? `<div class="h100">${Array.from({ length: settings.max }, (_, k) => `<button class="chip ${k + 1 === n ? 'on' : ''}" data-n="${k + 1}">${k + 1}</button>`).join('')}</div>` : `<div class="num-strip">${Array.from({ length: settings.max + 1 }, (_, k) => `<button class="chip ${k === n ? 'on' : ''}" data-n="${k}">${k}</button>`).join('')}</div>`}</div>`;
     const speak = () => TTS.say(n === 0 ? 'Số không. Không có gì cả.' : n > 20 ? `Số ${numWord(n)}. Gồm ${pvWords(n)}.` : `Số ${numWord(n)}. Có ${numWord(n)} ${name}.`);
     $('.prev', app).onclick = () => { n = Math.max(0, n - 1); sfx.flip(); render(); };
     $('.next', app).onclick = () => { n = Math.min(settings.max, n + 1); sfx.flip(); render(); };

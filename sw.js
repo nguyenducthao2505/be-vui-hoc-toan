@@ -1,5 +1,5 @@
 /* Bộ nhớ đệm để chạy offline. Khi sửa mã, tăng số phiên bản bên dưới. */
-const CACHE = 'bvht-v3';
+const CACHE = 'bvht-v4';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './style.css',
   './core.js', './lessons.js', './games.js', './games2.js', './app.js',
   './icon-192.png', './icon-512.png', './maskable-512.png'];

@@ -48,7 +48,7 @@ function gameBalloons() {
 function gameMemory() {
   setTitle('Lật thẻ ghép đôi'); const tok = screenTok;
   const big = settings.max > 20 && Math.random() < .6;
-  const nums = big ? shuffle(Array.from({ length: 89 }, (_, k) => k + 11)).slice(0, 6) : shuffle(Array.from({ length: Math.min(settings.max, 10) }, (_, k) => k + 1)).slice(0, 6);
+  const nums = big ? shuffle(Array.from({ length: settings.max - 10 }, (_, k) => k + 11)).slice(0, 6) : shuffle(Array.from({ length: Math.min(settings.max, 10) }, (_, k) => k + 1)).slice(0, 6);
   let [e, name] = pick(THINGS); if (big) name = 'khối chục';
   const cards = shuffle(nums.flatMap(n => [{ n, t: 'num' }, { n, t: 'obj' }]));
   app.innerHTML = `<div class="row" style="margin-bottom:12px;font-size:22px;font-weight:800">${Owl.html('small')} Tìm cặp: số và ${big ? 'thanh chục' : 'nhóm ' + name} giống nhau · Lượt: <b id="mv">0</b></div>

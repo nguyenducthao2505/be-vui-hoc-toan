@@ -3,7 +3,7 @@
 const app = document.getElementById('app');
 
 const GAMES = [
-  { h: 'bang100', ic: '💯', name: 'Bảng số 100', sub: 'Tìm số, liền trước, liền sau', color: '#ff006e' },
+  { h: 'bang100', ic: '💯', name: 'Bảng số', sub: 'Tìm số, liền trước, liền sau', color: '#ff006e' },
   { h: 'ngoc', ic: '🧜‍♀️', name: 'Tiên cá bắt ngọc', sub: 'Bơi theo đáp án', color: '#0096c7' },
   { h: 'tomau', ic: '🎨', name: 'Tô màu theo số', sub: 'Lâu đài, hoa, kỳ lân', color: '#e056fd' },
   { h: 'tiec', ic: '🫖', name: 'Tiệc trà công chúa', sub: 'Đếm đủ món', color: '#ff8fab' },
@@ -58,7 +58,7 @@ function parentScreen() {
     <label>Tên của bé <input type="text" id="sName" value="${escapeHtml(settings.childName)}" placeholder="VD: Bống"></label>
     <label>Chủ đề <select id="sTheme"><option value="princess">👑 Công chúa – Nàng tiên – Tiên cá</option><option value="animal">🐶 Thú cưng – Hoa quả</option></select></label>
     <label>Nhân vật dẫn dắt <select id="sMascot"><option value="tien">🧚 Tiên Nhỏ</option><option value="cu">🦉 Cú Tí Hon</option></select></label>
-    <label>Phạm vi số <select id="sMax"><option value="10">0 – 10</option><option value="20">0 – 20</option><option value="100">0 – 100 (chương trình lớp 1)</option></select></label>
+    <label>Phạm vi số <select id="sMax">${[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(v => `<option value="${v}">0 – ${v}${v === 100 ? ' (chương trình lớp 1)' : ''}</option>`).join('')}</select></label>
     <label>Tốc độ đọc <input type="range" id="sRate" min="0.6" max="1.3" step="0.05" value="${settings.rate}"></label>
     <label>Giọng đọc <input type="checkbox" id="sVoice" ${settings.voice ? 'checked' : ''}></label>
     <label>Âm thanh hiệu ứng <input type="checkbox" id="sSfx" ${settings.sfx ? 'checked' : ''}></label>
